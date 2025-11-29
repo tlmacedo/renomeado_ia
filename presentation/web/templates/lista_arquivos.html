@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block content %}
+    <h2>Arquivos</h2>
+    <table>
+        <thead>
+        <tr>
+            <th>ID</th>
+            <th>Nome</th>
+            <th>Sugerido</th>
+            <th>Status</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for a in arquivos %}
+            <tr>
+                <td>{{ a.id }}</td>
+                <td>{{ a.nome_original }}</td>
+                <td>{{ a.nome_sugerido|default:"-" }}</td>
+                <td>{{ a.status }}</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+{% endblock %}

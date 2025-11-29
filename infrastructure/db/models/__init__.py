@@ -1,0 +1,1 @@
+from .arquivo import ArquivoModel

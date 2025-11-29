@@ -1,0 +1,13 @@
+from typing import Protocol, Iterable, Optional
+
+from core.entities.arquivo import Arquivo
+
+
+class ArquivoRepository(Protocol):
+    def add(self, arquivo: Arquivo) -> Arquivo: ...
+
+    def get(self, arquivo_id: int) -> Arquivo: ...
+
+    def update(self, arquivo: Arquivo) -> Arquivo: ...
+
+    def list(self, status: Optional[str] = None) -> Iterable[Arquivo]: ...
