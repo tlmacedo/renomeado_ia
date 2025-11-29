@@ -1,0 +1,347 @@
+vamos continuar com o projeto conforme planejamento abaixo:
+
+1. Visão Geral do Projeto
+Objetivo: Desenvolver um aplicativo web em Python/Django para renomear documentos e arquivos de mídia com sugestões baseadas em:
+
+Conteúdo de documentos (PDF, DOCX, etc.) via NLP/IA.
+Metadados de mídias (imagens/vídeos) via EXIF e APIs de visão computacional.
+Público-alvo: Profissionais que lidam com grandes volumes de arquivos (pesquisadores, designers, administradores).
+
+2. Funcionalidades Principais
+A) Núcleo do Sistema
+
+
+Funcionalidade	Descrição	Tecnologias/API
+Upload de arquivos	Suporte para múltiplos formatos (PDF, DOCX, JPG, MP4, etc.).	Django, python-magic (validação)
+Renomeação de documentos	Extrai texto e sugere nomes com IA.	PyPDF2, python-docx, spaCy/OpenAI
+Renomeação de mídias	Usa metadados (EXIF) ou reconhecimento de objetos para sugestões.	Pillow, OpenCV, Google Vision API
+Histórico de alterações	Log de renomeações com nome original, novo nome e timestamp.	PostgreSQL, Django Models
+B) Funcionalidades Adicionais (Novas Ideias)
+
+
+Funcionalidade	Descrição	Tecnologias/API
+Tags inteligentes	Gera tags automáticas para organização.	NLTK, Google Vision API
+Templates de nomenclatura	Permite criar regras personalizadas (ex: [DATA]_[AUTOR]).	Django Forms, armazenamento em JSON
+Integração com nuvem	Conecta a Google Drive, Dropbox, etc.	google-api-python-client, boto3
+Pré-visualização de nomes	Mostra sugestões antes de confirmar.	JavaScript (AJAX), Django REST Framework
+Processamento assíncrono	Tarefas demoradas em background (ex: arquivos grandes).	Celery + Redis
+
+
+# **Checklist Completo do Projeto - Renomeador de Arquivos com IA**
+Crie um arquivo `CHECKLIST.md` no repositório raiz do projeto com o seguinte conteúdo e depois marque os itens conforme já foram e depois os que forem sendo concluídos.:
+---
+
+## **📋 FASE 1: MVP - Fundações do Sistema (4 semanas)**
+
+### **🔧 Configuração do Ambiente**
+- [ ] Instalar PyCharm Professional
+- [ ] Configurar Python 3.11+ com `pipenv` ou `poetry`
+- [ ] Instalar Docker e Docker-Compose
+- [ ] Configurar PostgreSQL (via Docker ou local)
+- [ ] Criar repositório Git no GitHub/GitLab
+- [ ] Configurar `.gitignore` para Python/Django
+- [ ] Criar `requirements.txt` ou `Pipfile` com dependências básicas:
+  - [ ] Django 4.2+
+  - [ ] psycopg2-binary
+  - [ ] python-decouple
+  - [ ] Pillow
+  - [ ] python-magic
+
+### **🏗️ Estrutura do Projeto Django**
+- [ ] Criar projeto Django: `django-admin startproject renomeador_ia`
+- [ ] Estruturar pastas seguindo Clean Architecture:
+  - [ ] Criar `core/` (entidades, repositories, services)
+  - [ ] Criar `infrastructure/` (adapters, config)
+  - [ ] Criar `application/` (use_cases, dtos)
+  - [ ] Criar `presentation/` (templates, static, views)
+  - [ ] Criar `tests/`
+- [ ] Configurar `settings.py`:
+  - [ ] Banco PostgreSQL
+  - [ ] Arquivos de mídia (MEDIA_ROOT, MEDIA_URL)
+  - [ ] Configurações de segurança básicas
+
+### **📊 Modelos de Dados (Core/Entities)**
+- [ ] Criar modelo `Arquivo`:
+  - [ ] nome_original (CharField)
+  - [ ] nome_sugerido (CharField)
+  - [ ] nome_final (CharField)
+  - [ ] tipo_arquivo (CharField)
+  - [ ] tamanho (IntegerField)
+  - [ ] data_upload (DateTimeField)
+  - [ ] status (CharField - choices: pendente, processado, erro)
+- [ ] Criar modelo `HistoricoRenomeacao`:
+  - [ ] arquivo (ForeignKey)
+  - [ ] nome_anterior (CharField)
+  - [ ] nome_novo (CharField)
+  - [ ] data_alteracao (DateTimeField)
+- [ ] Executar migrações: `python manage.py makemigrations && migrate`
+
+### **🎨 Interface Básica (Presentation)**
+- [ ] Instalar TailwindCSS via CDN ou npm
+- [ ] Criar template base (`base.html`):
+  - [ ] Header com logo/título
+  - [ ] Navegação básica
+  - [ ] Container principal
+  - [ ] Footer
+- [ ] Criar páginas:
+  - [ ] `home.html` - página inicial
+  - [ ] `upload.html` - formulário de upload
+  - [ ] `lista_arquivos.html` - listagem de arquivos
+- [ ] Configurar arquivos estáticos (CSS, JS)
+
+### **📤 Sistema de Upload**
+- [ ] Criar formulário Django para upload (`forms.py`)
+- [ ] Implementar view de upload:
+  - [ ] Validação de tipos de arquivo permitidos
+  - [ ] Validação de tamanho máximo
+  - [ ] Salvar arquivo no sistema
+  - [ ] Criar registro no banco de dados
+- [ ] Adicionar Dropzone.js para drag-and-drop:
+  - [ ] Incluir biblioteca no template
+  - [ ] Configurar upload assíncrono via AJAX
+  - [ ] Feedback visual durante upload
+
+### **✏️ Renomeação Manual**
+- [ ] Criar formulário de edição de nome
+- [ ] Implementar view de renomeação:
+  - [ ] Permitir edição do nome do arquivo
+  - [ ] Validar novo nome (caracteres permitidos)
+  - [ ] Atualizar arquivo físico e registro no banco
+  - [ ] Registrar no histórico
+- [ ] Criar interface de listagem:
+  - [ ] Mostrar arquivos uploadados
+  - [ ] Botões para renomear/download/excluir
+  - [ ] Paginação se necessário
+
+### **🧪 Testes da Fase 1**
+- [ ] Testes unitários para modelos
+- [ ] Testes de integração para upload
+- [ ] Testes de interface (formulários)
+- [ ] Teste manual completo do fluxo
+
+---
+
+## **📋 FASE 2: IA e Processamento de Metadados (3 semanas)**
+
+### **📚 Processamento de Documentos**
+- [ ] Instalar bibliotecas:
+  - [ ] `PyPDF2` ou `pdfplumber`
+  - [ ] `python-docx`
+  - [ ] `textract`
+  - [ ] `spacy` + modelo em português (`pt_core_news_sm`)
+- [ ] Criar serviço de extração de texto (`core/services/text_extractor.py`):
+  - [ ] Método para PDFs
+  - [ ] Método para DOCX
+  - [ ] Método genérico usando textract
+  - [ ] Tratamento de erros e encoding
+- [ ] Implementar analisador de conteúdo:
+  - [ ] Extrair palavras-chave com spaCy
+  - [ ] Identificar tópicos principais
+  - [ ] Detectar entidades nomeadas (pessoas, organizações)
+
+### **🖼️ Processamento de Mídias**
+- [ ] Instalar bibliotecas:
+  - [ ] `opencv-python`
+  - [ ] `python-exif`
+- [ ] Criar serviço de metadados (`core/services/metadata_extractor.py`):
+  - [ ] Extrair EXIF de imagens (data, localização, câmera)
+  - [ ] Extrair metadados de vídeos (duração, resolução)
+  - [ ] Tratar casos onde metadados não existem
+- [ ] Implementar detecção básica de conteúdo:
+  - [ ] Usar OpenCV para análise básica de imagens
+  - [ ] Detectar rostos, objetos simples (opcional)
+
+### **🤖 Sistema de Sugestão de Nomes**
+- [ ] Criar serviço de IA (`core/services/ai_naming_service.py`):
+  - [ ] Lógica para documentos (baseada em palavras-chave)
+  - [ ] Lógica para mídias (baseada em metadados)
+  - [ ] Fallback para nomes padrão se IA falhar
+- [ ] Implementar diferentes estratégias:
+  - [ ] Baseada em data: `YYYY-MM-DD_tipo.ext`
+  - [ ] Baseada em conteúdo: `topico_subtopico.ext`
+  - [ ] Baseada em localização: `local_data.ext`
+- [ ] Integrar OpenAI API (opcional):
+  - [ ] Configurar chave da API
+  - [ ] Criar prompts para sugestão de nomes
+  - [ ] Implementar fallback local se API falhar
+
+### **👁️ Pré-visualização de Sugestões**
+- [ ] Modificar view de upload para incluir processamento:
+  - [ ] Após upload, processar arquivo automaticamente
+  - [ ] Gerar múltiplas sugestões de nome
+  - [ ] Armazenar sugestões no banco temporariamente
+- [ ] Criar interface de pré-visualização:
+  - [ ] Mostrar nome original vs. sugestões
+  - [ ] Permitir edição manual das sugestões
+  - [ ] Botões para aceitar/rejeitar sugestões
+- [ ] Implementar AJAX para experiência fluida:
+  - [ ] Processar arquivos em background
+  - [ ] Mostrar loading durante processamento
+  - [ ] Atualizar interface quando processamento terminar
+
+### **🧪 Testes da Fase 2**
+- [ ] Testes para extratores de texto e metadados
+- [ ] Testes para serviço de IA/sugestões
+- [ ] Testes de integração para fluxo completo
+- [ ] Testes com diferentes tipos de arquivo
+
+---
+
+## **📋 FASE 3: Funcionalidades Avançadas (3 semanas)**
+
+### **📝 Sistema de Templates**
+- [ ] Criar modelo `TemplateNomenclatura`:
+  - [ ] nome (CharField)
+  - [ ] padrao (CharField) - ex: `[DATA]_[TIPO]_[AUTOR]`
+  - [ ] descricao (TextField)
+  - [ ] usuario (ForeignKey - opcional)
+- [ ] Implementar parser de templates:
+  - [ ] Substituir placeholders por valores reais
+  - [ ] Suportar: `[DATA]`, `[TIPO]`, `[TAMANHO]`, `[AUTOR]`, etc.
+  - [ ] Validar formato do template
+- [ ] Criar interface para gerenciar templates:
+  - [ ] CRUD completo (criar, editar, excluir)
+  - [ ] Templates padrão do sistema
+  - [ ] Templates personalizados por usuário
+
+### **📜 Sistema de Tags Inteligentes**
+- [ ] Criar modelo `Tag`:
+  - [ ] nome (CharField)
+  - [ ] cor (CharField)
+  - [ ] categoria (CharField)
+- [ ] Criar modelo `ArquivoTag` (many-to-many):
+  - [ ] arquivo (ForeignKey)
+  - [ ] tag (ForeignKey)
+  - [ ] confianca (FloatField) - score da IA
+- [ ] Implementar gerador de tags:
+  - [ ] Para documentos: extrair conceitos com spaCy
+  - [ ] Para imagens: usar Google Vision API (opcional)
+  - [ ] Sugerir tags baseadas em padrões históricos
+- [ ] Interface de tags:
+  - [ ] Mostrar tags sugeridas
+  - [ ] Permitir adicionar/remover tags manualmente
+  - [ ] Filtrar arquivos por tags
+
+### **⚡ Processamento Assíncrono (Celery)**
+- [ ] Instalar e configurar Celery:
+  - [ ] `celery[redis]`
+  - [ ] Configurar Redis como broker
+  - [ ] Configurar Django settings para Celery
+- [ ] Criar tasks assíncronas:
+  - [ ] `process_document.delay(arquivo_id)`
+  - [ ] `extract_metadata.delay(arquivo_id)`
+  - [ ] `generate_suggestions.delay(arquivo_id)`
+- [ ] Implementar sistema de status:
+  - [ ] Estados: pendente, processando, concluído, erro
+  - [ ] Barra de progresso em tempo real
+  - [ ] Notificações quando processamento terminar
+- [ ] Configurar worker Celery:
+  - [ ] Script de inicialização
+  - [ ] Monitoramento com Flower (opcional)
+
+### **📊 Histórico e Relatórios**
+- [ ] Expandir modelo `HistoricoRenomeacao`:
+  - [ ] Adicionar campos: usuario, motivo, tags_antes, tags_depois
+- [ ] Criar views de relatórios:
+  - [ ] Estatísticas de renomeações por período
+  - [ ] Tipos de arquivo mais processados
+  - [ ] Tags mais utilizadas
+- [ ] Interface de histórico:
+  - [ ] Listagem paginada de alterações
+  - [ ] Filtros por data, tipo, usuário
+  - [ ] Exportar relatório em CSV/PDF
+
+### **🧪 Testes da Fase 3**
+- [ ] Testes para sistema de templates
+- [ ] Testes para tasks Celery
+- [ ] Testes de performance com arquivos grandes
+- [ ] Testes de concorrência (múltiplos uploads)
+
+---
+
+## **📋 FASE 4: Polimentos e Extensões (2 semanas)**
+
+### **☁️ Integração com Nuvem**
+- [ ] Instalar SDKs:
+  - [ ] `google-api-python-client` (Google Drive)
+  - [ ] `dropbox` (Dropbox)
+  - [ ] `boto3` (AWS S3)
+- [ ] Implementar conectores:
+  - [ ] Autenticação OAuth para cada serviço
+  - [ ] Upload/download de arquivos
+  - [ ] Listagem de arquivos remotos
+- [ ] Interface de integração:
+  - [ ] Conectar/desconectar contas
+  - [ ] Importar arquivos da nuvem
+  - [ ] Sincronizar nomes alterados de volta
+
+### **🎨 Melhorias de UI/UX**
+- [ ] Implementar dark/light mode:
+  - [ ] CSS variables para temas
+  - [ ] Toggle no header
+  - [ ] Salvar preferência no localStorage
+- [ ] Responsividade completa:
+  - [ ] Mobile-first design
+  - [ ] Testes em diferentes resoluções
+  - [ ] Otimizar para tablets
+- [ ] Melhorias de acessibilidade:
+  - [ ] Labels apropriados
+  - [ ] Navegação por teclado
+  - [ ] Contraste adequado
+  - [ ] Screen reader support
+
+### **🔒 Segurança e Validação**
+- [ ] Implementar verificações avançadas:
+  - [ ] Scan antivírus com `python-magic`
+  - [ ] Detecção de dados sensíveis (CPF, e-mail)
+  - [ ] Limite de taxa para uploads
+- [ ] Configurações de produção:
+  - [ ] HTTPS obrigatório
+  - [ ] CSP (Content Security Policy)
+  - [ ] Rate limiting com `django-ratelimit`
+- [ ] Backup e recuperação:
+  - [ ] Backup automático do banco
+  - [ ] Recuperação de arquivos deletados
+
+### **🚀 Deploy e Monitoramento**
+- [ ] Criar configuração Docker:
+  - [ ] `Dockerfile` para aplicação
+  - [ ] `docker-compose.yml` com todos os serviços
+  - [ ] Scripts de inicialização
+- [ ] Configurar CI/CD:
+  - [ ] GitHub Actions ou GitLab CI
+  - [ ] Testes automatizados
+  - [ ] Deploy automático para staging
+- [ ] Monitoramento:
+  - [ ] Configurar Sentry para erros
+  - [ ] Logs estruturados
+  - [ ] Métricas de performance
+
+### **📖 Documentação**
+- [ ] Documentação técnica:
+  - [ ] README detalhado
+  - [ ] Guia de instalação
+  - [ ] Documentação da API (se aplicável)
+- [ ] Documentação do usuário:
+  - [ ] Manual de uso
+  - [ ] FAQ
+  - [ ] Vídeos tutoriais (opcional)
+
+### **🧪 Testes Finais**
+- [ ] Testes de carga (stress testing)
+- [ ] Testes de segurança (penetration testing básico)
+- [ ] Testes de usabilidade com usuários reais
+- [ ] Correção de bugs identificados
+
+---
+
+## **✅ Entrega Final**
+- [ ] Código fonte completo no repositório
+- [ ] Aplicação deployada e funcional
+- [ ] Documentação completa
+- [ ] Testes automatizados funcionando
+- [ ] Manual de manutenção
+- [ ] Plano de evolução/roadmap
+
+---
+
